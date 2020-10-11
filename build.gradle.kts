@@ -18,7 +18,7 @@ dependencies {
 
 pluginBundle {
     website = "https://imlab.by"
-    vcsUrl = "https://gitlab.imlab.by"
+    vcsUrl = "https://github.com/Flassie/imlab-gradle-plugin"
     tags = listOf("imlab", "flassie")
 }
 
