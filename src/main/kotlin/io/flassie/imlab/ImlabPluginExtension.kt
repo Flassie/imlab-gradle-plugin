@@ -1,3 +1,5 @@
+package io.flassie.imlab
+
 @Suppress("unused", "SpellCheckingInspection")
 open class ImlabPluginExtension {
     var enablePublish = true
