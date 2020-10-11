@@ -4,6 +4,7 @@ package io.flassie.imlab
 open class ImlabPluginExtension {
     var enablePublish = true
     var repositories = mutableListOf<String>()
+    var publishingRepositoryName = "imlab-libraries"
 
     fun ikassaRepository(name: String, isPublic: Boolean = false) {
         repositories.add(name.getFullName("ikassa", isPublic))

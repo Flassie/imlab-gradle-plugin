@@ -47,17 +47,17 @@ class ImlabPlugin : Plugin<Project> {
             target.plugins.apply(MavenPublishPlugin::class.java)
 
             target.afterEvaluate {
-                registerPublishing(target)
+                registerPublishing(target, extension.publishingRepositoryName)
             }
         }
     }
 
-    private fun registerPublishing(project: Project) {
+    private fun registerPublishing(project: Project, publishingRepositoryName: String) {
         with(project) {
             configure<PublishingExtension> {
                 repositories {
                     maven {
-                        url = uri(NEXUS_URL)
+                        url = uri("$NEXUS_URL/$publishingRepositoryName")
 
                         credentials {
                             username = project.rootProject.extra[NEXUS_USERNAME_PROP].toString()
