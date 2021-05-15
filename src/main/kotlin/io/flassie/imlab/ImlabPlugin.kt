@@ -17,15 +17,17 @@ class ImlabPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         val extension = target.extensions.create<ImlabPluginExtension>("imlab")
 
-        val gitlabPublishing = extension.gitlabPublishing
+        target.afterEvaluate {
+            val gitlabPublishing = extension.gitlabPublishing
 
-        if(gitlabPublishing != null) {
-            target.plugins.apply(MavenPublishPlugin::class.java)
-        }
+            if (gitlabPublishing != null) {
+                target.plugins.apply(MavenPublishPlugin::class.java)
+            }
 
-        if(gitlabPublishing != null && gitlabPublishing.enable) {
-            target.afterEvaluate {
-                registerPublishing(target, extension)
+            if (gitlabPublishing != null && gitlabPublishing.enable) {
+                target.afterEvaluate {
+                    registerPublishing(target, extension)
+                }
             }
         }
     }
