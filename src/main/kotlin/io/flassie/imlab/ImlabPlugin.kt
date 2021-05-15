@@ -14,61 +14,38 @@ import org.gradle.kotlin.dsl.*
 
 @Suppress("unused", "SpellCheckingInspection")
 class ImlabPlugin : Plugin<Project> {
-    companion object {
-        const val NEXUS_USERNAME_PROP = "nexusUsername"
-        const val NEXUS_PASSWORD_PROP = "nexusPassword"
-        const val NEXUS_URL = "https://nexus.int.imlab.by/repository"
-    }
-
     override fun apply(target: Project) {
         val extension = target.extensions.create<ImlabPluginExtension>("imlab")
 
-        target.afterEvaluate {
-            extension.repositories.forEach {
-                repositories {
-                    maven {
-                        name = it
-                        url = uri("$NEXUS_URL/$it")
+        val gitlabPublishing = extension.gitlabPublishing
 
-                        if(!it.endsWith("-public")) {
-                            credentials {
-                                username = project.rootProject.extra[NEXUS_USERNAME_PROP].toString()
-                                password = project.rootProject.extra[NEXUS_PASSWORD_PROP].toString()
-                            }
-                        }
-
-                        println("Added imlab repository: $url")
-                    }
-                }
-            }
+        if(gitlabPublishing != null) {
+            target.plugins.apply(MavenPublishPlugin::class.java)
         }
 
-        if(extension.enablePublish) {
-            target.plugins.apply(MavenPublishPlugin::class.java)
-
+        if(gitlabPublishing != null) {
             target.afterEvaluate {
-                registerPublishing(target, extension.publishingRepositoryName)
+                registerPublishing(target, gitlabPublishing)
             }
         }
     }
 
-    private fun registerPublishing(project: Project, publishingRepositoryName: String) {
+    private fun registerPublishing(project: Project, gitlabPublishing: GitlabPublishing) {
         with(project) {
-            configure<PublishingExtension> {
-                repositories {
-                    maven {
-                        url = uri("$NEXUS_URL/$publishingRepositoryName")
-
-                        credentials {
-                            username = project.rootProject.extra[NEXUS_USERNAME_PROP].toString()
-                            password = project.rootProject.extra[NEXUS_PASSWORD_PROP].toString()
-                        }
+            val ciToken = System.getenv("CI_JOB_TOKEN")
+            if(gitlabPublishing.allowNonCI || ciToken != null) {
+                configure<PublishingExtension> {
+                    repositories {
+                        gitlab(
+                            projectId = gitlabPublishing.projectId,
+                            privateKey = project.rootProject.extra[gitlabPublishing.privateKeyVariable].toString()
+                        )
                     }
-                }
 
-                publications {
-                    create<MavenPublication>("imlabNexusPublication")
-                        .generatePomDependencies(project)
+                    publications {
+                        create<MavenPublication>("gitlabPublication")
+                            .generatePomDependencies(project)
+                    }
                 }
             }
         }
@@ -128,7 +105,6 @@ class ImlabPlugin : Plugin<Project> {
         }
 
         if(dependency is ProjectDependency) {
-            println(dependency)
             val group = dependency.dependencyProject.group.toString()
             val name = dependency.dependencyProject.name
             val version = dependency.dependencyProject.version
@@ -141,7 +117,6 @@ class ImlabPlugin : Plugin<Project> {
                 appendNode("scope", scope)
             }
         } else if(dependency !is SelfResolvingDependency) {
-            println(dependency)
             node.appendNode("dependency").apply {
                 appendNode("groupId", dependency.group)
                 appendNode("artifactId", dependency.name)
