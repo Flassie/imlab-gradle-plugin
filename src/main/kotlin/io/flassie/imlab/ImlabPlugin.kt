@@ -7,9 +7,12 @@ import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.SelfResolvingDependency
 import org.gradle.api.attributes.Category
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
+import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.*
 
 @Suppress("unused", "SpellCheckingInspection")
@@ -47,8 +50,18 @@ class ImlabPlugin : Plugin<Project> {
                     }
 
                     publications {
-                        create<MavenPublication>("gitlabPublication")
-                            .generatePomDependencies(project)
+                        create<MavenPublication>("gitlabPublication") {
+                            generatePomDependencies(project)
+
+                            from(components["java"])
+
+                            val sourcesJar by tasks.creating(Jar::class) {
+                                archiveClassifier.set("sources")
+                                from(project.sourceSets.getByName("main").allSource)
+                            }
+
+                            artifact(sourcesJar)
+                        }
                     }
                 }
             }
@@ -132,4 +145,8 @@ class ImlabPlugin : Plugin<Project> {
             }
         }
     }
+
+    val Project.sourceSets: SourceSetContainer get() =
+        (this as ExtensionAware).extensions.getByName("sourceSets") as SourceSetContainer
+
 }
