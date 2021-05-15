@@ -37,12 +37,12 @@ val Project.gitlabKey: String?
         }
     }
 
-fun MavenArtifactRepository.setupGitlabAuthentication(default: String) {
+fun MavenArtifactRepository.setupGitlabAuthentication(default: String?) {
     credentials(HttpHeaderCredentials::class.java) {
         val ciToken = System.getenv("CI_JOB_TOKEN")
         if(ciToken == null) {
             name = "Private-Token"
-            value = default
+            value = default ?: "NO_TOKEN"
         } else {
             name = "Job-Token"
             value = ciToken
@@ -54,7 +54,7 @@ fun MavenArtifactRepository.setupGitlabAuthentication(default: String) {
     }
 }
 
-fun RepositoryHandler.gitlab(groupId: Int? = null, projectId: Int? = null, privateKey: String) {
+fun RepositoryHandler.gitlab(groupId: Int? = null, projectId: Int? = null, privateKey: String? = null) {
     val repositoryUrl = getGitlabRepositoryURL(groupId, projectId)
 
     maven {
