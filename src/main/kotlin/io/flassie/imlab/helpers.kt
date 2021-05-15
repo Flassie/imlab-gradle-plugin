@@ -38,14 +38,17 @@ val Project.gitlabKey: String?
     }
 
 fun MavenArtifactRepository.setupGitlabAuthentication(default: String?) {
+    val ciToken = System.getenv("CI_JOB_TOKEN")
+
+    if(ciToken == null && default == null) return
+
     credentials(HttpHeaderCredentials::class.java) {
-        val ciToken = System.getenv("CI_JOB_TOKEN")
-        if(ciToken == null) {
-            name = "Private-Token"
-            value = default ?: "NO_TOKEN"
-        } else {
+        if(ciToken != null) {
             name = "Job-Token"
             value = ciToken
+        } else if(default != null) {
+            name = "Private-Token"
+            value = default
         }
     }
 
