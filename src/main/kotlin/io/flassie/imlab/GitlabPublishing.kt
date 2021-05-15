@@ -2,7 +2,7 @@ package io.flassie.imlab
 
 data class GitlabPublishing(
     var enable: Boolean = false,
-    var projectId: Int = gitlabProjectId ?: -1,
+    var projectId: Int? = gitlabProjectId,
     var allowNonCI: Boolean = false,
     var privateKeyVariable: String = "imlabGitlabKey",
     var version: String? = null
