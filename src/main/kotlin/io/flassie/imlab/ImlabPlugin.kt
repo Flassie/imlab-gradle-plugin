@@ -23,14 +23,16 @@ class ImlabPlugin : Plugin<Project> {
             target.plugins.apply(MavenPublishPlugin::class.java)
         }
 
-        if(gitlabPublishing != null) {
+        if(gitlabPublishing != null && gitlabPublishing.enable) {
             target.afterEvaluate {
-                registerPublishing(target, gitlabPublishing)
+                registerPublishing(target, extension)
             }
         }
     }
 
-    private fun registerPublishing(project: Project, gitlabPublishing: GitlabPublishing) {
+    private fun registerPublishing(project: Project, extension: ImlabPluginExtension) {
+        val gitlabPublishing = extension.gitlabPublishing!!
+
         with(project) {
             val ciToken = System.getenv("CI_JOB_TOKEN")
             if(gitlabPublishing.allowNonCI || ciToken != null) {

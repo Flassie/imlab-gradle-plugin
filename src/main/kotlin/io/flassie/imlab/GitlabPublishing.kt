@@ -1,7 +1,9 @@
 package io.flassie.imlab
 
 data class GitlabPublishing(
-    val projectId: Int,
-    val allowNonCI: Boolean = false,
-    val privateKeyVariable: String = "imlabGitlabKey"
+    var enable: Boolean = false,
+    var projectId: Int = gitlabProjectId ?: -1,
+    var allowNonCI: Boolean = false,
+    var privateKeyVariable: String = "imlabGitlabKey",
+    var version: String? = null
 )

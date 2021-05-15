@@ -7,20 +7,28 @@ import org.gradle.api.credentials.HttpHeaderCredentials
 import org.gradle.authentication.http.HttpHeaderAuthentication
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.extra
-import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import java.net.URI
 
 const val GITLAB_HOST="gitlab.imlab.by"
+
+val gitTag: String?
+    get() = System.getenv("CI_COMMIT_TAG")
+
+val gitTagVersion: String?
+    get() = gitTag?.removePrefix("v")
+
+val gitlabProjectId: Int?
+    get() = System.getenv("CI_PROJECT_ID")?.toInt()
 
 fun getGitlabRepositoryURL(groupId: Int? = null, projectId: Int? = null): URI {
     if(groupId == null && projectId == null) throw RuntimeException("groupId or projectId must be specified")
     if(groupId != null && projectId != null) throw RuntimeException("Both groupId and projectId can't be specified")
 
     return if(groupId != null) {
-        URI("https://gitlab.imlab.by/api/v4/groups/$groupId/-/packages/maven")
+        URI("https://$GITLAB_HOST/api/v4/groups/$groupId/-/packages/maven")
     } else {
-        URI("https://gitlab.imlab.by/api/v4/projects/$projectId/packages/maven")
+        URI("https://$GITLAB_HOST/api/v4/projects/$projectId/packages/maven")
     }
 }
 
