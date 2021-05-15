@@ -40,7 +40,7 @@ val Project.gitlabKey: String?
         } else {
             val pkVariable = this.extensions.getByType<ImlabPluginExtension>().gitlabPublishing?.privateKeyVariable
             if(pkVariable != null) {
-                project.rootProject.extra[pkVariable].toString()
+                project.rootProject.properties[pkVariable]?.toString()
             } else null
         }
     }

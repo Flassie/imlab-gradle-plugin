@@ -42,7 +42,7 @@ class ImlabPlugin : Plugin<Project> {
                     repositories {
                         gitlab(
                             projectId = gitlabPublishing.projectId,
-                            privateKey = project.rootProject.extra[gitlabPublishing.privateKeyVariable].toString()
+                            privateKey = project.rootProject.properties[gitlabPublishing.privateKeyVariable]?.toString()
                         )
                     }
 
