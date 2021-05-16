@@ -12,6 +12,7 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.*
 
@@ -45,54 +46,56 @@ class ImlabPlugin : Plugin<Project> {
                     repositories {
                         gitlab(
                             projectId = gitlabPublishing.projectId,
-                            privateKey = project.rootProject.properties[gitlabPublishing.privateKeyVariable]?.toString()
+                            privateKey = project.rootProject.properties[extension.privateKeyVariable]?.toString()
                         )
                     }
 
                     publications {
                         create<MavenPublication>("gitlabPublication") {
-                            generatePomDependencies(project)
 
-                            from(components["java"])
+
+                            pom {
+                                groupId = project.group.toString()
+                                artifactId = project.name
+                                version = project.version.toString()
+
+
+                                withXml {
+                                    val node = asNode()
+
+                                    val dependenciesNode = node.appendNode("dependencies")
+
+                                    val visited = hashSetOf<Dependency>()
+
+                                    project.handleDependencies(
+                                        listOf("api"),
+                                        "compile",
+                                        dependenciesNode,
+                                        visited
+                                    )
+
+                                    project.handleDependencies(
+                                        listOf("implementation", "runtimeOnly"),
+                                        "runtime",
+                                        dependenciesNode,
+                                        visited
+                                    )
+                                }
+                            }
+
 
                             val sourcesJar by tasks.creating(Jar::class) {
                                 archiveClassifier.set("sources")
                                 from(project.sourceSets.getByName("main").allSource)
                             }
 
+                            val jarArtifact by tasks.named("jar", Jar::class.java)
+
                             artifact(sourcesJar)
+                            artifact(jarArtifact)
                         }
                     }
                 }
-            }
-        }
-    }
-
-    private fun MavenPublication.generatePomDependencies(project: Project) {
-        pom {
-            groupId = project.group.toString()
-            artifactId = project.name
-            version = project.version.toString()
-
-            withXml {
-                val node = asNode()
-                val dependenciesNode = node.appendNode("dependencies")
-
-                val visited = hashSetOf<Dependency>()
-
-                project.handleDependencies(
-                    listOf("api"),
-                    "compile",
-                    dependenciesNode,
-                    visited
-                )
-
-                project.handleDependencies(
-                    listOf("implementation", "runtimeOnly"),
-                    "runtime",
-                    dependenciesNode,
-                    visited
-                )
             }
         }
     }

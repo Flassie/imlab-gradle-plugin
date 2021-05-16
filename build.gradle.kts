@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.flassie.imlab"
-version = "0.1.7"
+version = "0.1.10"
 
 repositories {
     mavenCentral()

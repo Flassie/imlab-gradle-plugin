@@ -38,10 +38,8 @@ val Project.gitlabKey: String?
         return if(ciToken != null) {
             ciToken
         } else {
-            val pkVariable = this.extensions.getByType<ImlabPluginExtension>().gitlabPublishing?.privateKeyVariable
-            if(pkVariable != null) {
-                project.rootProject.properties[pkVariable]?.toString()
-            } else null
+            val pkVariable = this.extensions.getByType<ImlabPluginExtension>().privateKeyVariable
+            project.rootProject.properties[pkVariable]?.toString()
         }
     }
 
